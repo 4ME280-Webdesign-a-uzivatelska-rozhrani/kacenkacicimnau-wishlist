@@ -6,47 +6,45 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f7f9fc;
-      color: #333;
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 1rem;
+      font-family: system-ui, sans-serif;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+      background: #f9f9f9;
     }
     img {
       max-width: 100%;
       height: auto;
-      border-radius: 8px;
       margin: 1rem 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    h1, h2 {
-      color: #2c3e50;
-    }
-    a {
-      color: #0077cc;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    .price, .note {
-      font-weight: bold;
+    hr {
+      margin: 2rem 0;
     }
   </style>
 </head>
 <body>
   <h1>🎁 Wishlist</h1>
-  <div id="content">Načítání přání...</div>
+  <div id="content">Načítám…</div>
 
   <script>
-    fetch('wishlist.md')
+    const rawURL = "https://raw.githubusercontent.com/4ME280-Webdesign-a-uzivatelska-rozhrani/kacenkacicimnau-wishlist/main/wishlist.md";
+
+    fetch(rawURL)
       .then(response => response.text())
-      .then(text => {
-        document.getElementById('content').innerHTML = marked.parse(text);
+      .then(markdown => {
+        // Najdi řádky, které obsahují jen URL obrázku, a převeď je na Markdown obrázky
+        const processed = markdown.replace(
+          /^- (https?:\/\/.*\.(?:png|jpg|jpeg|webp|gif))/gm,
+          (_, url) => `![](${url})`
+        );
+        // Překlad markdownu na HTML
+        document.getElementById('content').innerHTML = marked.parse(processed);
       })
       .catch(error => {
-        document.getElementById('content').innerHTML = "<p>❌ Nepodařilo se načíst wishlist.</p>";
         console.error(error);
+        document.getElementById('content').innerHTML = "<p>❌ Nepodařilo se načíst wishlist.</p>";
       });
   </script>
 </body>
