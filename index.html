@@ -18,18 +18,34 @@
   </div>
 
   <script>
-    const BIN_URL = "https://api.jsonbin.io/v3/b/683041fa8a456b7966a44aaf";
+    const BIN_ID = "TVŮJ_BIN_ID"; // ⬅️ ZDE vlož své bin ID
+    const API_KEY = "TVŮJ_API_KLÍČ"; // ⬅️ ZDE vlož svůj klíč
+    const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
+    let wishlistItems = [];
+
+    // Načtení wishlistu
     fetch(BIN_URL, {
       headers: {
-
+        "X-Access-Key": API_KEY
       }
     })
     .then(res => res.json())
     .then(data => {
-      const items = data.record || data; // podle verze JSONBinu
+      wishlistItems = data.record;
+      renderWishlist();
+    })
+    .catch(err => {
+      document.getElementById("wishlist").innerHTML =
+        "<p class='text-danger'>Nepodařilo se načíst wishlist.</p>";
+      console.error("Chyba načítání:", err);
+    });
+
+    function renderWishlist() {
       const container = document.getElementById("wishlist");
-      items.forEach(item => {
+      container.innerHTML = "";
+
+      wishlistItems.forEach((item, index) => {
         container.innerHTML += `
           <div class="col-md-6 col-lg-4">
             <div class="card h-100 shadow-sm">
@@ -39,18 +55,52 @@
                 ${item.url ? `<p><a href="${item.url}" target="_blank">🔗 Odkaz</a></p>` : ""}
                 <p><strong>Cena:</strong> ${item.price}</p>
                 ${item.note ? `<p><strong>Poznámka:</strong> ${item.note}</p>` : ""}
-                ${item.reservedBy ? `<p class="text-success"><strong>🎁 Daruje:</strong> ${item.reservedBy}</p>` : ""}
+                <p id="reserved-${index}" class="${item.reservedBy ? 'text-success' : ''}">
+                  ${item.reservedBy ? `🎁 Daruje: ${item.reservedBy}` : "Nikdo si ještě nerezervoval"}
+                </p>
+                <div class="d-flex gap-2">
+                  <input type="text" class="form-control" placeholder="Tvoje jméno" id="input-${index}" ${item.reservedBy ? "disabled" : ""} />
+                  <button class="btn btn-primary" onclick="reserveItem(${index})" ${item.reservedBy ? "disabled" : ""}>Rezervovat</button>
+                </div>
               </div>
             </div>
           </div>
         `;
       });
-    })
-    .catch(error => {
-      console.error("Chyba při načítání dat:", error);
-      document.getElementById("wishlist").innerHTML =
-        '<p class="text-danger">Nepodařilo se načíst wishlist.</p>';
-    });
+    }
+
+    function reserveItem(index) {
+      const input = document.getElementById(`input-${index}`);
+      const name = input.value.trim();
+      if (!name) {
+        alert("Zadej své jméno");
+        return;
+      }
+
+      wishlistItems[index].reservedBy = name;
+
+      // Aktualizuj JSON v jsonbin.io
+      fetch(BIN_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Access-Key": API_KEY,
+          "X-Bin-Private": "false"
+        },
+        body: JSON.stringify(wishlistItems)
+      })
+      .then(res => {
+        if (res.ok) {
+          renderWishlist(); // přegeneruj seznam
+        } else {
+          alert("Nepodařilo se zapsat rezervaci.");
+        }
+      })
+      .catch(err => {
+        console.error("Chyba zápisu:", err);
+        alert("Chyba při ukládání rezervace.");
+      });
+    }
   </script>
 </body>
 </html>
