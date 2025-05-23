@@ -18,12 +18,11 @@
   </div>
 
   <script>
-    const BIN_URL = "https://api.jsonbin.io/v3/b/68303f868a456b7966a44977";
-    const API_KEY = "$2a$10$RvDNmhhY37c5lfJN0BgDl.M5c/THcxCFelvFoZbpNpZogj4zswFCq"; // Pokud je bin privátní, vlož sem svůj X-Access-Key
+    const BIN_URL = "https://api.jsonbin.io/v3/b/683041fa8a456b7966a44aaf";
 
     fetch(BIN_URL, {
       headers: {
-        "X-Access-Key": API_KEY // Pokud je bin veřejný, můžeš tento řádek smazat
+
       }
     })
     .then(res => res.json())
